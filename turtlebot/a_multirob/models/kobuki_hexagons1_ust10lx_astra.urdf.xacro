@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<!--
+    - Base      : kobuki
+    - Stacks    : hexagons
+    - 3d Sensor : astra
+-->    
+<robot name="turtlebot" xmlns:xacro="http://ros.org/wiki/xacro">
+
+	<xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_library.urdf.xacro" />
+
+	<!-- Kobuki mobile base -->
+	<kobuki/>
+
+	<!-- Hexagonal stacks -->
+	<stack_hexagons parent="base_link"/>
+
+	<!-- Orbbec Astra RGB-D camera -->
+	<sensor_astra parent="plate_middle_link" >
+		<origin xyz="-0.086 0.008 0.094" rpy="0.0 0.0 0.0"/>
+	</sensor_astra>
+
+	<!-- Hokuyo LIDAR -->
+	<sensor_hokuyo_ust10lx name="hokuyo" parent="plate_middle_link" >
+		<origin xyz="0.137 0 -0.0525" rpy="3.141592653589793 0 0" /> 
+	</sensor_hokuyo_ust10lx>
+
+	<!-- TODO - Green back plate -->
+	<!--
+	<link name="head_tilt_link">
+		<visual>
+			<origin xyz="0 0 0.02" rpy="0 0 0"/>
+			<geometry>
+				<box size="0.03 0.038 0.04"/>
+			</geometry>
+			<material name="Green1">
+				<color rgba="0.1 0.8 0 1.0"/>
+			</material>
+		</visual>
+	</link>
+	-->
+
+	<!-- TODO - Arm -->
+
+</robot>

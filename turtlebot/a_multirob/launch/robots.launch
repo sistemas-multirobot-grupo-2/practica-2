@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<launch>
+<arg name="base"      value="$(optenv TURTLEBOT_BASE kobuki)"/> <!-- Kobuki base -->
+<arg name="battery"   value="$(optenv TURTLEBOT_BATTERY /proc/acpi/battery/BAT0)"/>  <!-- /proc/acpi/battery/BAT0 --> 
+<arg name="stacks"    value="$(optenv TURTLEBOT_STACKS hexagons1)"/>  <!-- hexagons stack --> 
+<arg name="3d_sensor" value="$(optenv TURTLEBOT_3D_SENSOR kinect)"/>  <!-- kinect, asus_xtion_pro --> 
+
+<!-- No namespace here as we will share this description. Access with slash at the beginning -->
+<arg name="urdf_file" default="$(find xacro)/xacro.py '$(find a_multirob)/models/kobuki_hexagons1_ust10lx_astra.urdf.xacro'" />
+<param name="robot_description" command="$(arg urdf_file)" />
+
+<!-- ROBOT 1 (leader) -->
+<group ns="robot1">
+	<param name="tf_prefix" value="robot1_tf" />
+	<include file="$(find a_multirob)/launch/one_robot.launch" >
+	<arg name="init_pose" value="-x 1 -y 1 -z 0" />
+	<arg name="robot_name"  value="leader_turtle" />
+	</include>
+</group>
+
+<!-- ROBOT 2 (follower) -->
+<group ns="robot2">
+	<param name="tf_prefix" value="robot2_tf" />
+	<include file="$(find a_multirob)/launch/one_robot.launch" >
+	<arg name="init_pose" value="-x -1 -y 1 -z 0" />
+	<arg name="robot_name"  value="follower_turtle" />
+	</include>
+</group>
+
+</launch>
