@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+    - Base      : kobuki
+    - Stacks    : hexagons
+    - 3d Sensor : none
+    - top_plate : reactor_wrist
+-->    
+<robot name="turtlebot" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_library.urdf.xacro" />
+  
+  <kobuki/>
+  <stack_hexagons parent="base_link"/>
+  <phantomx_reactor_wrist parent="plate_top_link" prefix="arm_">
+		<origin xyz="0.0 0.0 0.003" rpy="0.0 0.0 0.0"/>
+  </phantomx_reactor_wrist>
+
+</robot>

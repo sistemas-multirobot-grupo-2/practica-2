@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!--
+  The complete turtlebot library of xacros for easy reference
+ -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- General -->
+  <xacro:include filename="$(find turtlebot_description)/urdf/common_properties.urdf.xacro"/>
+  <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_properties.urdf.xacro"/>
+  <!-- Bases -->
+  <xacro:include filename="$(find create_description)/urdf/create.urdf.xacro"/>
+  <xacro:include filename="$(find kobuki_description)/urdf/kobuki.urdf.xacro" />
+  <!-- Stacks -->
+  <xacro:include filename="$(find turtlebot_description)/urdf/stacks/circles.urdf.xacro"/>
+  <xacro:include filename="$(find turtlebot_description)/urdf/stacks/hexagons.urdf.xacro"/>
+  <xacro:include filename="$(find turtlebot_description)/urdf/stacks/hexagons1.urdf.xacro"/>
+  <!-- 3D Sensors -->
+  <xacro:include filename="$(find turtlebot_description)/urdf/sensors/kinect.urdf.xacro"/>
+  <xacro:include filename="$(find turtlebot_description)/urdf/sensors/asus_xtion_pro.urdf.xacro"/>
+  <xacro:include filename="$(find turtlebot_description)/urdf/sensors/asus_xtion_pro_offset.urdf.xacro"/>
+  <xacro:include filename="$(find turtlebot_description)/urdf/sensors/astra.urdf.xacro"/>
+  <!-- 2D Sensors -->
+  <xacro:include filename="$(find turtlebot_description)/urdf/sensors/rplidar.urdf.xacro"/>
+  <xacro:include filename="$(find turtlebot_description)/urdf/sensors/hokuyo_urg04lx.urdf.xacro"/>
+  <xacro:include filename="$(find turtlebot_description)/urdf/sensors/hokuyo_ust10lx.urdf.xacro"/>
+  <!-- Arms
+  <xacro:include filename="$(find widowx_arm_description)/urdf/widowx.urdf.xacro"/>
+  <xacro:include filename="$(find phantomx_reactor_arm_description)/urdf/phantomx_reactor_no_wrist.urdf.xacro"/>
+  <xacro:include filename="$(find phantomx_reactor_arm_description)/urdf/phantomx_reactor_wrist.urdf.xacro"/> -->
+
+</robot>

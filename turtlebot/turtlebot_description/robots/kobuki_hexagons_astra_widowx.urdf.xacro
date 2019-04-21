@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+    - Base      : kobuki
+    - Stacks    : hexagons
+    - 3d Sensor : astra
+    - top_plate : widowx
+-->    
+<robot name="turtlebot" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_library.urdf.xacro" />
+  
+  <kobuki/>
+  <stack_hexagons parent="base_link"/>
+  <sensor_astra parent="plate_middle_link">
+	  <origin xyz="-0.086 0.008 0.094" rpy="0.0 0.0 0.0"/>
+  </sensor_astra>
+  <widowx_arm parent="plate_top_link" prefix="">
+		<origin xyz="0.045 0.0 0.003" rpy="0.0 0.0 0.0"/>
+  </widowx_arm>
+
+</robot>
