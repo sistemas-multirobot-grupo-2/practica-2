@@ -18,7 +18,10 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 
 		//Threshold to get only the green parts
 		cv::Mat thresholded_img;
-		inRange(img_hsv, cv::Scalar(20, 0, 0), cv::Scalar(80, 255, 255), thresholded_img);
+		cv::Scalar min_green = cv::Scalar(20, 0, 0); //Minimum values considered "green"
+		cv::Scalar max_green = cv::Scalar(80, 255, 255); //Maximum values considered "green"
+		inRange(img_hsv, min_green, max_green, thresholded_img);
+
 		
 		//Search contours 
 		std::vector<std::vector<cv::Point> > contours;
