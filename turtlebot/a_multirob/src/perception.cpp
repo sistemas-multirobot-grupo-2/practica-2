@@ -4,6 +4,10 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include "std_msgs/Float32.h"
+#include "geometry_msgs/Vector3.h"
+
+cv::Point centroid_to_pub = cv::Point(0, 0);
+float area_to_pub = 0.0;
 
 void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
@@ -21,7 +25,6 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 		cv::Scalar min_green = cv::Scalar(20, 0, 0); //Minimum values considered "green"
 		cv::Scalar max_green = cv::Scalar(80, 255, 255); //Maximum values considered "green"
 		inRange(img_hsv, min_green, max_green, thresholded_img);
-
 		
 		//Search contours 
 		std::vector<std::vector<cv::Point> > contours;
@@ -62,6 +65,10 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 		//Show image (with centroid and bounding box)
 		cv::imshow("green_detection", img);
 		cv::waitKey(30);
+
+		//Update global variables
+		centroid_to_pub = centroid;
+		area_to_pub = biggest_area;
 	}
 	catch (cv_bridge::Exception& e)
 	{
@@ -79,15 +86,17 @@ int main(int argc, char **argv)
 	cv::startWindowThread();
 	image_transport::ImageTransport it(n);
 	image_transport::Subscriber sub = it.subscribe("robot2/camera/rgb/image_raw", 1, imageCallback);
-	ros::Publisher area_pub = n.advertise<std_msgs::Float32>("area", 10);
+	ros::Publisher area_pub = n.advertise<geometry_msgs::Vector3>("area", 10);
 
 	ros::Rate loop_rate(10);
 
 	while (ros::ok())
 	{
-		std_msgs::Float32 msg;
-
-		msg.data = 5; //TODO - Publish the value contained in a global variable (that will be updated by the callback)
+		geometry_msgs::Vector3 msg;
+		
+		msg.x = centroid_to_pub.x;
+		msg.y = centroid_to_pub.y;
+		msg.z = area_to_pub;
 
 		area_pub.publish(msg);
 
