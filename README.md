@@ -16,5 +16,5 @@ rosrun a_multirob perception
 ```
 This node takes the images published in the "robot2/camera/rgb/image_raw" topic and gets the bounding box and centroid of the biggest green area on the frame. Now, it just displays it in a window, but we are working to publish this relevant data in topics ("/area", "/centroid" and "/bounding_box").
 
-![Perception node](https://github.com/sistemas-multirobot-grupo-2/practica-2/blob/master/multimedia/perception.png")
+![Perception node](https://github.com/sistemas-multirobot-grupo-2/practica-2/blob/master/multimedia/perception.png "Perception node")
 
