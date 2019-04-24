@@ -4,16 +4,20 @@
   <version>0.0.0</version>
   <description>This package contains the necessary launchfiles to launch a simulatin with two modified versions of the Turtlebot robot (with a UST-10 LIDAR and an Orbbec Astra RGB-D camera and a green plate on their back. All this in an empty world. It also contains a perception node, which will use the camera of one of the robots to publish some information useful to follow the other one using basic computer vision.</description>
 
+  <!-- Maintainers -->
   <maintainer email="rscr1@gcloud.ua.es">COVA ROCAMORA, R. Saul</maintainer>
   <maintainer email="jonathan.mortes.esquer@gmail.com">MORTES ESQUER, Jonathan</maintainer>
   <maintainer email="yoinelnovelotellez@gmail.com">NOVELO TELLEZ, Yoinel</maintainer>
   <maintainer email="josemigueltorrescamara@gmail.com">TORRES CAMARA, Jose Miguel</maintainer>
-
+ 
+  <!-- License -->
   <license>GPLv3</license>
 
+  <!-- Author (of this package, NOT the whole project) -->
   <author email="josemigueltorrescamara@gmail.com">Jose Miguel Torres Camara</author>
 
 
+  <!-- Dependencies -->
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>roscpp</build_depend>
