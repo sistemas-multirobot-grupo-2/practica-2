@@ -2,7 +2,7 @@
 <package format="2">
   <name>a_multirob</name>
   <version>0.0.0</version>
-  <description>This package contains the necessary launchfiles to launch a simulatin with two modified versions of the Turtlebot robot (with a UST-10 LIDAR and an Orbbec Astra RGB-D camera and a green plate on their back. All this in an empty world. It also contains a perception node, which will use the camera of one of the robots to publish some information useful to follow the other one using basic computer vision.</description>
+  <description>This package contains the necessary launchfiles to launch a simulatin with two modified versions of the Turtlebot robot (with a UST-10 LIDAR and an Orbbec Astra RGB-D camera and a green plate on their back. All this in an empty world.</description>
 
   <!-- Maintainers -->
   <maintainer email="rscr1@gcloud.ua.es">COVA ROCAMORA, R. Saul</maintainer>
@@ -22,7 +22,6 @@
 
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
-  <build_depend>image_transport</build_depend>
   <build_depend>std_msgs</build_depend>
   
   <build_export_depend>roscpp</build_export_depend>
@@ -32,6 +31,5 @@
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
-  <exec_depend>image_transport</exec_depend>
 
 </package>
