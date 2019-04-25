@@ -11,6 +11,12 @@ This can be launched by adding our *turtlebot* folder in the *src* directory of 
 roslaunch a_multirob create_multi_robot.launch
 ```
 
+For some tests, it might be useful to move the robot around using the terminal. This can be done by executing the following command (using "robot1" or "robot2" at the beggining of the topic to choose which robot to move):
+```bash
+rostopic pub -r 10 /robot2/mobile_base/commands/velocity geometry_msgs/Twist '{linear:  {x: 0.1, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0,z: 0.0}}'
+```
+
+
 # Perception
 In order to launch the ***perception node***, it is necessary to use the *perception* package. The order to run it is:
 ```bash
