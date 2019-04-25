@@ -12,7 +12,7 @@ roslaunch a_multirob create_multi_robot.launch
 ```
 
 # Perception
-In order to launch the **perception node** (*perception*), it is necessary to use the *perception* package. The order to run it is:
+In order to launch the ***perception node***, it is necessary to use the *perception* package. The order to run it is:
 ```bash
 rosrun perception perception
 ```
@@ -20,3 +20,7 @@ This node takes the images published in the */robot2/camera/rgb/image_raw* topic
 
 ![Perception node](https://github.com/sistemas-multirobot-grupo-2/practica-2/blob/master/multimedia/perception.png "Perception node")
 
+The ***perception_tester*** node can be used to test if everything is being properly published by the *perception* one. It prints in the default output device (screen) the data published by the *perception* node. The order to run it is:
+```bash
+rosrun perception perception_tester
+```
