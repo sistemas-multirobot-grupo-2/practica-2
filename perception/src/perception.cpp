@@ -1,7 +1,6 @@
 #include "ros/ros.h"
 //ROS messages
 #include "std_msgs/Float32.h"
-#include "geometry_msgs/Vector3.h"
 #include "perception/perception_data.h"
 //OpenCV
 #include <image_transport/image_transport.h>
