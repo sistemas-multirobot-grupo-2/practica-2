@@ -2,6 +2,7 @@
 //ROS messages
 #include "std_msgs/Float32.h"
 #include "geometry_msgs/Vector3.h"
+#include "perception/perception_data.h"
 //OpenCV
 #include <image_transport/image_transport.h>
 #include <opencv2/highgui/highgui.hpp>
@@ -14,7 +15,8 @@
 
 cv::Point centroid_to_pub = cv::Point(0, 0);
 float area_to_pub = 0.0;
-//cv::Mat last_image; //For optical flow
+cv::Rect bounding_box;
+int confidence = 0;
 
 void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
@@ -53,29 +55,42 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 			}
 		}
 
-		std::vector<cv::Point> biggest_cnt = contours[biggest_idx];
-
-		//Calculate bounding rectangle for the biggest area
-		cv::Rect bounding_box = cv::boundingRect(biggest_cnt);
-
-		//Calculate the centroid of the biggest area
-		cv::Moments mu = cv::moments(biggest_cnt);
-		cv::Point2f centroid = cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00 ); //[m10/m00; m01/m00]
-		
-		//Draw centroid and bounding box
-		cv::circle(img, centroid, 2, cv::Scalar(0, 0, 255), -1, 8, 0 ); //Centroid
-		cv::rectangle(img,
-				cv::Point(bounding_box.x, bounding_box.y),
-				cv::Point(bounding_box.x + bounding_box.width, bounding_box.y + bounding_box.height),
-				cv::Scalar(0, 0, 255)); //Bounding box
-		
-		//Show image (with centroid and bounding box)
-		cv::imshow("green_detection", img);
-		cv::waitKey(30);
-
-		//Update global variables
-		centroid_to_pub = centroid;
-		area_to_pub = biggest_area;
+		if (contours.size() > 0)
+		{
+			//Store biggest contour in a variable in order not to access an index several times
+			std::vector<cv::Point> biggest_cnt = contours[biggest_idx];
+	
+			//Calculate bounding rectangle for the biggest area
+			bounding_box = cv::boundingRect(biggest_cnt);
+	
+			//Calculate the centroid of the biggest area
+			cv::Moments mu = cv::moments(biggest_cnt);
+			cv::Point2f centroid = cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00 ); //[m10/m00; m01/m00]
+			
+			//Draw centroid and bounding box
+			cv::circle(img, centroid, 2, cv::Scalar(0, 0, 255), -1, 8, 0 ); //Centroid
+			cv::rectangle(img,
+					cv::Point(bounding_box.x, bounding_box.y),
+					cv::Point(bounding_box.x + bounding_box.width, bounding_box.y + bounding_box.height),
+					cv::Scalar(0, 0, 255)); //Bounding box
+			
+			//Show image (with centroid and bounding box)
+			cv::imshow("green_detection", img);
+			cv::waitKey(30);
+	
+			//Update global variables (to publish them in the main loop)
+			centroid_to_pub = centroid;
+			area_to_pub = biggest_area;
+			confidence = 100;
+		}
+		else //IF NO CONTOURS WERE FOUND
+		{
+			//Update global variables (to publish them in the main loop)
+			bounding_box = cv::Rect(0,0,0,0);
+			centroid_to_pub = cv::Point(0,0);
+			area_to_pub = 0;
+			confidence = 0;
+		}
 	}
 	catch (cv_bridge::Exception& e)
 	{
@@ -100,21 +115,29 @@ int main(int argc, char **argv)
 	image_transport::Subscriber sub = it.subscribe("robot2/camera/rgb/image_raw", 1, imageCallback);
 
 	//Centroid (x and y) and area publisher (z)
-	ros::Publisher area_pub = n.advertise<geometry_msgs::Vector3>("area", 10);
+	ros::Publisher perception_pub = n.advertise<perception::perception_data>("perception_data", 10);
 
 	ros::Rate loop_rate(10);
 
 	while (ros::ok())
 	{
 		//Create message
-		geometry_msgs::Vector3 msg;
+		perception::perception_data msg;
 		
-		msg.x = centroid_to_pub.x;
-		msg.y = centroid_to_pub.y;
-		msg.z = area_to_pub;
+		msg.centroid_x = centroid_to_pub.x;
+		msg.centroid_y = centroid_to_pub.y;
+		
+		msg.area = area_to_pub;
+
+		msg.bb_x = bounding_box.x;
+		msg.bb_y = bounding_box.y;
+		msg.bb_width = bounding_box.width;
+		msg.bb_height = bounding_box.height;
+
+		msg.confidence = confidence;
 
 		//Publish
-		area_pub.publish(msg);
+		perception_pub.publish(msg);
 
 		//Spin and wait
 		ros::spinOnce();
