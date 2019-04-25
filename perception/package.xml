@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>perception</name>
+  <version>0.0.0</version>
+  <description>This package contains a perception node, which will use the camera of one of the robots to publish some information useful to follow the other one using basic computer vision.</description>
+
+  <maintainer email="rscr1@gcloud.ua.es">COVA ROCAMORA, R. Saul</maintainer>
+  <maintainer email="jonathan.mortes.esquer@gmail.com">MORTES ESQUER, Jonathan</maintainer>
+  <maintainer email="yoinelnovelotellez@gmail.com">NOVELO TELLEZ, Yoinel</maintainer>
+  <maintainer email="josemigueltorrescamara@gmail.com">TORRES CAMARA, Jose Miguel</maintainer>
+
+  <license>GPLv3</license>
+
+  <author email="josemigueltorrescamara@gmail.com">Jose Miguel Torres Camara</author>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>image_transport</build_depend>
+  <build_depend>std_msgs</build_depend>
+  
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+  
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>image_transport</exec_depend>
+
+</package>
