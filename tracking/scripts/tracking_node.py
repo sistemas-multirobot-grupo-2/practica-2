@@ -67,7 +67,7 @@ class Tracking:
             self.y = (v - self.k[1,2]) * self.z / self.k[0,0]
 
     def computeLeaderPosition(self):
-        if self.centroid is not None:
+        if (self.centroid is not None and self.z is not None):
             v,u = self.centroid
             
             #Image reference systen to ego reference system
@@ -100,6 +100,7 @@ class Tracking:
         
         
         print(self.ego_yaw*180.0/np.pi)
+        print("--------------")
         
 
 def main(args):

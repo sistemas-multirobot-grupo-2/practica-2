@@ -5,7 +5,7 @@
   <description>This package contains a perception node, which will use the camera of one of the robots to publish some information useful to follow the other one using basic computer vision.</description>
 
   <!-- Maintainers -->
-  <maintainer email="rscr1@gcloud.ua.es">COVA ROCAMORA, R. Saul</maintainer>
+  <maintainer email="saulcovarocamora@gmail.com">COVA ROCAMORA, R. Saul</maintainer>
   <maintainer email="jonathan.mortes.esquer@gmail.com">MORTES ESQUER, Jonathan</maintainer>
   <maintainer email="yoinelnovelotellez@gmail.com">NOVELO TELLEZ, Yoinel</maintainer>
   <maintainer email="josemigueltorrescamara@gmail.com">TORRES CAMARA, Jose Miguel</maintainer>
