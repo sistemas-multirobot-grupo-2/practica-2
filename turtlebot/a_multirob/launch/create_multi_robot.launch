@@ -4,7 +4,7 @@
 
   <!-- Start world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">  
-    <!--arg name="world_name" value="worlds/willowgarage.world"/--> <!-- Note: the world_name is with respect to GAZEBO_RESOURCE_PATH environmental variable -->
+    <arg name="world_name" value="$(find a_multirob)/launch/cube_world.world"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
