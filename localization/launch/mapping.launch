@@ -1,0 +1,5 @@
+<launch>
+        <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping">
+                <param name="scan" value="/robot1/hokuyo/scan"/>
+        </node>
+</launch>
