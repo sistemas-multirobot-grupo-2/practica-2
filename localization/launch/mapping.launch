@@ -1,5 +1,10 @@
+<?xml version="1.0"?>
 <launch>
-        <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping">
-                <param name="scan" value="/robot1/hokuyo/scan"/>
-        </node>
+    <node pkg="gmapping" type="slam_gmapping" name="gmapping_thing" output="screen" >
+        <remap from="scan" to="/hokuyo/scan" />
+        <remap from="tf" to="/tf" />
+        <param name="odom_frame" value="/odom" />
+        <param name="base_frame" value="/base_link" />
+        <param name="map_frame" value="map" />
+    </node>
 </launch>

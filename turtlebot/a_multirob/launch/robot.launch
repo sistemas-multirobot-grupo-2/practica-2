@@ -10,12 +10,8 @@
 <param name="robot_description" command="$(arg urdf_file)" />
 
 <!-- ROBOT 1 (leader) -->
-<group ns="robot1">
-	<param name="tf_prefix" value="robot1_tf" />
-	<include file="$(find a_multirob)/launch/one_robot.launch" >
-	<arg name="init_pose" value="-x 1 -y 1 -z 0" />
-	<arg name="robot_name"  value="leader_turtle" />
-	</include>
-</group>
-
+<include file="$(find a_multirob)/launch/one_robot.launch" >
+<arg name="init_pose" value="-x 1 -y 1 -z 0" />
+<arg name="robot_name"  value="leader_turtle" />
+</include>
 </launch>

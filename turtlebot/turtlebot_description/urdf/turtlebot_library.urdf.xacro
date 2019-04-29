@@ -11,7 +11,7 @@
   <xacro:include filename="$(find kobuki_description)/urdf/kobuki.urdf.xacro" />
   <!-- Stacks -->
   <xacro:include filename="$(find turtlebot_description)/urdf/stacks/circles.urdf.xacro"/>
-  <xacro:include filename="$(find turtlebot_description)/urdf/stacks/hexagons.urdf.xacro"/>
+  <!--<xacro:include filename="$(find turtlebot_description)/urdf/stacks/hexagons.urdf.xacro"/>-->
   <xacro:include filename="$(find turtlebot_description)/urdf/stacks/hexagons1.urdf.xacro"/>
   <!-- 3D Sensors -->
   <xacro:include filename="$(find turtlebot_description)/urdf/sensors/kinect.urdf.xacro"/>

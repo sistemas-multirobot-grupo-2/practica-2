@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find localization)/my_map.yaml" />
+    <node pkg="amcl" type="amcl" name="amcl"    output="screen">
+        <remap from="scan" to="/hokuyo/scan" />
+        <remap from="tf" to="/tf" />
+    </node>
+
+
+</launch>
+
