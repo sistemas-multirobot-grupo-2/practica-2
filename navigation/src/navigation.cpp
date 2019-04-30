@@ -131,7 +131,6 @@ int main(int argc, char** argv){
 	//Automated program
   //Subscribe to the topic "next_leader_position"
   ros::Subscriber next_leader_position_sub = n.subscribe("next_leader_position", 1000, move2posCallBack);
-
   //publish on the topic "leader_position" which is the actual pose of the robot
   std_msgs::String msg;
   std::stringstream ss;
