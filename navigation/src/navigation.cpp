@@ -7,12 +7,9 @@
 #include "std_msgs/String.h"
 
 using namespace std;
-
+ros::NodeHandle n;
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 move_base_msgs::MoveBaseGoal position;
-
-ros::init(argc, argv, "navigation");
-ros::NodeHandle n;
 // publisher definition
 ros::Publisher leader_position_pub = n.advertise<std_msgs::String>("leader_position", 1000);
 ros::Rate loop_rate(1);
@@ -58,7 +55,7 @@ void move2posCallBack(const std_msgs::String::ConstPtr& msg){
     else
     cout << "Position could not be reached, attempting to rescue TurtleBot... sending it back home..." << endl;
 	}
-  elseif(message == "pose1")
+  else if(message == "pose1")
   {
     position.target_pose.pose.position.x = pos.pose1X;
     position.target_pose.pose.position.y = pos.pose1Y;
@@ -75,7 +72,7 @@ void move2posCallBack(const std_msgs::String::ConstPtr& msg){
     else
       cout << "Position could not be reached, attempting to rescue TurtleBot... sending it back home..." << endl;
   }
-  elseif(message == "pose2")
+  else if(message == "pose2")
   {
     position.target_pose.pose.position.x = pos.pose2X;
     position.target_pose.pose.position.y = pos.pose2Y;
@@ -92,7 +89,7 @@ void move2posCallBack(const std_msgs::String::ConstPtr& msg){
     else
       cout << "Position could not be reached, attempting to rescue TurtleBot... sending it back home..." << endl;
   }
-  elseif(message == "pose3")
+  else if(message == "pose3")
   {
     position.target_pose.pose.position.x = pos.pose3X;
     position.target_pose.pose.position.y = pos.pose3Y;
@@ -116,6 +113,8 @@ void move2posCallBack(const std_msgs::String::ConstPtr& msg){
 
 int main(int argc, char** argv){
   ros::init(argc, argv, "simple_navigation_goals");
+  ros::init(argc, argv, "navigation");
+
 
   //tell the action client that we want to spin a thread pose2Y default
   MoveBaseClient ac("move_base", true);
@@ -147,3 +146,4 @@ int main(int argc, char** argv){
   }
 	return 0;
 }
+
