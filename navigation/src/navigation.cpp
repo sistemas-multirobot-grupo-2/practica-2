@@ -112,7 +112,6 @@ void move2posCallBack(const std_msgs::String::ConstPtr& msg){
 
 
 int main(int argc, char** argv){
-  ros::init(argc, argv, "simple_navigation_goals");
   ros::init(argc, argv, "navigation");
 
 
