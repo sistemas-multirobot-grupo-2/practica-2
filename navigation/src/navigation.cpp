@@ -7,17 +7,12 @@
 #include "std_msgs/String.h"
 
 using namespace std;
-ros::NodeHandle n;
-typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
-move_base_msgs::MoveBaseGoal position;
-// publisher definition
-ros::Publisher leader_position_pub = n.advertise<std_msgs::String>("leader_position", 1000);
-ros::Rate loop_rate(1);
 
 /*
 	This contains the position coordinates for the navigation positions
 */
-struct positions{
+struct positions
+{
 	//-HOME-//
   double homeX = 1.35;
   double homeY = -0.15;
@@ -29,113 +24,142 @@ struct positions{
 	double pose2Y = 1.97;
 	//-position red-//
 	double pose3X = 15.47;
-	double pose3Y = -1.89;
+  double pose3Y = -1.89;
 } pos;
 
+typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
-void move2posCallBack(const std_msgs::String::ConstPtr& msg){
+class leaderPosition
+{
+public:
+  // membres of the class
+  ros::Publisher leaderPositionPub;
+  ros::Subscriber nextLeaderPositionSub;
+  ros::NodeHandle nh;
+  move_base_msgs::MoveBaseGoal position;
 
-  string message= msg->data.c_str();
-  MoveBaseClient ac("move_base", true);
-  if(message == "home")
-  { //Changes position coordinates to match
-    //We move to  home base
-		position.target_pose.pose.position.x = pos.homeX;
-		position.target_pose.pose.position.y = pos.homeY;
-		cout << "Moving back to home." << endl;
-    //Sends movement command
-  	ac.sendGoal(position);
-    ac.waitForResult();
 
-  	if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-    {
-      cout << "Target position achieved." << endl << endl;
-      leader_position_pub.publish(msg);
+  // member functions of the class
+  // contructor
+  leaderPosition()
+  {
+
+    //configuration of main position values
+    position.target_pose.header.frame_id = "map";
+    position.target_pose.header.stamp = ros::Time::now();
+    position.target_pose.pose.orientation.w = 1.0;
+    // publisher
+    leaderPositionPub = nh.advertise<std_msgs::String>("leader_position", 1000);
+    // subscriber
+    nextLeaderPositionSub = nh.subscribe("next_leader_position", 1000, &leaderPosition::move2posCallBack, this);
+  }
+
+  // subscriber callback
+  void move2posCallBack(const std_msgs::String::ConstPtr& msg)
+  {
+    //wait for the action server to come up
+    string message= msg->data.c_str();
+    std::stringstream ss;
+    std_msgs::String msg2;
+
+    MoveBaseClient ac("move_base", true);
+    while(!ac.waitForServer(ros::Duration(5.0))){
+      ROS_INFO("Waiting for the move_base action server to come up");
+    }
+
+
+    if(message == "home")
+    { //Changes position coordinates to match
+      //We move to  home base
+  		position.target_pose.pose.position.x = pos.homeX;
+  		position.target_pose.pose.position.y = pos.homeY;
+  		cout << "Moving back to home." << endl;
+      //Sends movement command
+    	ac.sendGoal(position);
+      ac.waitForResult();
+
+    	if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+      {
+        cout << "Target position achieved." << endl << endl;
+        ss << "home";
+        msg2.data = ss.str();
+        leaderPositionPub.publish(msg2);
+    	}
+      else
+      cout << "Position could not be reached, attempting to rescue TurtleBot... sending it back home..." << endl;
   	}
-    else
-    cout << "Position could not be reached, attempting to rescue TurtleBot... sending it back home..." << endl;
-	}
-  else if(message == "pose1")
-  {
-    position.target_pose.pose.position.x = pos.pose1X;
-    position.target_pose.pose.position.y = pos.pose1Y;
-    cout << "Moving to pose1." << endl;
-    //Sends movement command
-    ac.sendGoal(position);
-    ac.waitForResult();
-
-    if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+    else if(message == "pose1")
     {
-      cout << "Target position achieved." << endl << endl;
-      leader_position_pub.publish(msg);
-    }
-    else
-      cout << "Position could not be reached, attempting to rescue TurtleBot... sending it back home..." << endl;
-  }
-  else if(message == "pose2")
-  {
-    position.target_pose.pose.position.x = pos.pose2X;
-    position.target_pose.pose.position.y = pos.pose2Y;
-    cout << "Moving to pose2." << endl;
-    //Sends movement command
-    ac.sendGoal(position);
-    ac.waitForResult();
+      position.target_pose.pose.position.x = pos.pose1X;
+      position.target_pose.pose.position.y = pos.pose1Y;
+      cout << "Moving to pose1." << endl;
+      //Sends movement command
+      ac.sendGoal(position);
+      ac.waitForResult();
 
-    if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+      if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+      {
+        cout << "Target position achieved." << endl << endl;
+        ss << "pose1";
+        msg2.data = ss.str();
+        leaderPositionPub.publish(msg2);
+      }
+      else
+        cout << "Position could not be reached, attempting to rescue TurtleBot... sending it back home..." << endl;
+    }
+    else if(message == "pose2")
     {
-      cout << "Target position achieved." << endl << endl;
-      leader_position_pub.publish(msg);
-    }
-    else
-      cout << "Position could not be reached, attempting to rescue TurtleBot... sending it back home..." << endl;
-  }
-  else if(message == "pose3")
-  {
-    position.target_pose.pose.position.x = pos.pose3X;
-    position.target_pose.pose.position.y = pos.pose3Y;
-    cout << "Moving to pose1." << endl;
-    //Sends movement command
-    ac.sendGoal(position);
-    ac.waitForResult();
+      position.target_pose.pose.position.x = pos.pose2X;
+      position.target_pose.pose.position.y = pos.pose2Y;
+      cout << "Moving to pose2." << endl;
+      //Sends movement command
+      ac.sendGoal(position);
+      ac.waitForResult();
 
-    if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+      if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+      {
+        cout << "Target position achieved." << endl << endl;
+        ss << "pose2";
+        msg2.data = ss.str();
+        leaderPositionPub.publish(msg2);
+      }
+      else
+        cout << "Position could not be reached, attempting to rescue TurtleBot... sending it back home..." << endl;
+    }
+    else if(message == "pose3")
     {
-      cout << "Target position achieved." << endl << endl;
-      leader_position_pub.publish(msg);
+      position.target_pose.pose.position.x = pos.pose3X;
+      position.target_pose.pose.position.y = pos.pose3Y;
+      cout << "Moving to pose1." << endl;
+      //Sends movement command
+      ac.sendGoal(position);
+      ac.waitForResult();
+
+      if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+      {
+        cout << "Target position achieved." << endl << endl;
+        ss << "pose3";
+        msg2.data = ss.str();
+        leaderPositionPub.publish(msg2);
+      }
+      else
+        cout << "Position could not be reached, attempting to rescue TurtleBot... sending it back home..." << endl;
     }
-    else
-      cout << "Position could not be reached, attempting to rescue TurtleBot... sending it back home..." << endl;
   }
-}
+};//End of class leaderPosition
 
 
-
-
-int main(int argc, char** argv){
+int main(int argc, char** argv)
+{
   ros::init(argc, argv, "navigation");
+  leaderPosition leadPos;
+  ros::Rate loop_rate(1);
 
-
-  //tell the action client that we want to spin a thread pose2Y default
-  MoveBaseClient ac("move_base", true);
-
-  //wait for the action server to come up
-  while(!ac.waitForServer(ros::Duration(5.0))){
-    ROS_INFO("Waiting for the move_base action server to come up");
-  }
-
-	//configuration of main position values
-  position.target_pose.header.frame_id = "map";
-  position.target_pose.header.stamp = ros::Time::now();
-  position.target_pose.pose.orientation.w = 1.0;
-	//Automated program
-  //Subscribe to the topic "next_leader_position"
-  ros::Subscriber next_leader_position_sub = n.subscribe("next_leader_position", 1000, move2posCallBack);
-  //publish on the topic "leader_position" which is the actual pose of the robot
-  std_msgs::String msg;
+  std_msgs::String msg; // create the message to send
   std::stringstream ss;
   ss << "home";
   msg.data = ss.str();
-  leader_position_pub.publish(msg);
+  leadPos.leaderPositionPub.publish(msg);
 
   while (ros::ok())
   {
@@ -144,4 +168,3 @@ int main(int argc, char** argv){
   }
 	return 0;
 }
-
