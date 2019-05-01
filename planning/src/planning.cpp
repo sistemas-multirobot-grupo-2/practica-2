@@ -3,79 +3,72 @@
 #include <cstdlib>
 #include <string>
 #include <sstream>
-#include <move_base_msgs/MoveBaseAction.h>
-
 #include "std_msgs/String.h"
+#include <move_base_msgs/MoveBaseAction.h>
 
 using namespace std;
 
-
-
-class Planning
+class nextLeaderPosition
 {
-    private:
-    ros::Publisher next_leader_position_pub;
-    ros::Subscriber leader_position_sub;
-    
-    move_base_msgs::MoveBaseGoal position;
+public:
+  // membres of the class
+  ros::Publisher nextLeaderPositionPub;
+  ros::Subscriber leaderPositionSub;
+  ros::NodeHandle nh;
+  move_base_msgs::MoveBaseGoal position;
+
+  // member functions of the class
+  // contructor
+  nextLeaderPosition()
+  {
+    // publisher
+    nextLeaderPositionPub = nh.advertise<std_msgs::String>("next_leader_position", 1000);
+    // subscriber
+    leaderPositionSub = nh.subscribe("leader_position", 1000, &nextLeaderPosition::nextLeaderPositionCallback,this);
+  }
+  // subscriber callback
+  void nextLeaderPositionCallback(const std_msgs::String::ConstPtr& msg)
+  {
+    string message = msg->data.c_str();
+    std::stringstream ss;
     std_msgs::String msg2;
-    
-    public:
-    Planning(ros::NodeHandle& n)
+    if(message == "home")
     {
-        next_leader_position_pub = n.advertise<std_msgs::String>("next_leader_position", 1000);
-        leader_position_sub = n.subscribe("leader_position", 1000, &Planning::nextLeaderPositionCallback,this);
+      ss << "pose1";
+      msg2.data = ss.str();
+      nextLeaderPositionPub.publish(msg);
+  	}
+    else if(message == "pose1")
+    {
+      ss << "pose2";
+      msg2.data = ss.str();
+      nextLeaderPositionPub.publish(msg);
     }
-    
-    void nextLeaderPositionCallback(const std_msgs::String::ConstPtr& msg)
+    else if(message == "pose2")
     {
-        string message = msg->data.c_str();
-        std::stringstream ss;
+      ss << "pose3";
+      msg2.data = ss.str();
+      nextLeaderPositionPub.publish(msg);
+    }
+    else if(message == "pose3")
+    {
+      ss << "pose4";
+      msg2.data = ss.str();
+      nextLeaderPositionPub.publish(msg);
+    }
+  }
 
-        if(message == "home")
-        {
-            ss << "pose1";
-            msg2.data = ss.str();
-        }
-        else if(message == "pose1")
-        {
-            ss << "pose2";
-            msg2.data = ss.str();
-        }
-        else if(message == "pose2")
-        {
-            ss << "pose3";
-            msg2.data = ss.str();
-        }
-        else if(message == "pose3")
-        {
-            ss << "pose4";
-            msg2.data = ss.str();
-        }
-    };
-    
-    void loop()
-    {
-        ros::Rate rate(1);
-        while (ros::ok())
-        {
-            next_leader_position_pub.publish(msg2);
-            
-            ros::spinOnce();
-            rate.sleep();
-        }
-    };  
-         
 };
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-	ros::init(argc, argv, "planning");
-	ros::NodeHandle n;
-	Planning* plan = new Planning(n);
-	plan->loop();
-	
-	delete(plan);
-	return 0;
-};
+  ros::init(argc, argv, "planning");
+  nextLeaderPosition nLeadPos;
+  ros::Rate loop_rate(1);
 
+  while (ros::ok())
+  {
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
+}
