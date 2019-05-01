@@ -17,7 +17,7 @@ Para crear un nuevo mapa:
     Con esos nodos tienes los suficiente
 
 
-Para localizarse en un mapa: (Por hacer)
+Para localizarse en un mapa:
 1. roslaunch a_multirob create_one_robot.launch
 2. roslaunch localization localization.lauch
 3. roslaunch turtlebot_rviz_launchers view_navigation.launch

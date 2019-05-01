@@ -34,12 +34,12 @@ class Tracking:
         
         self.security_distance = 1
         
-        self.ego_position = np.zeros(3)
-        self.goal_position = np.zeros(4)
+        self.ego_position = None
+        self.goal_position = None
         self.ego_yaw = None
         
-        self.leader_position = np.zeros(3)
-        self.leader_position_gt = np.zeros(3)
+        self.leader_position = None
+        self.leader_position_gt = None
 
     def depthCallback(self,data):
         try:
@@ -81,26 +81,27 @@ class Tracking:
             
 
     def computeNewGoal(self):
-        self.ego_yaw = np.arctan2(self.leader_position[1]-self.ego_position[1],self.leader_position[0]-self.ego_position[0])
-        
-        object_distance = np.sqrt((self.ego_position[0]-self.leader_position[0])**2+(self.ego_position[1]-self.leader_position[1])**2)
-        
-        if object_distance > self.security_distance: #security distance
+        if self.leader_position is not None:
+            self.ego_yaw = np.arctan2(self.leader_position[1]-self.ego_position[1],self.leader_position[0]-self.ego_position[0])
             
-            goal_distance = object_distance - self.security_distance 
+            object_distance = np.sqrt((self.ego_position[0]-self.leader_position[0])**2+(self.ego_position[1]-self.leader_position[1])**2)
             
-            x_pos = goal_distance * np.cos(self.ego_yaw) 
-            y_pos = goal_distance * np.sin(self.ego_yaw)
+            if object_distance > self.security_distance: #security distance
+                
+                goal_distance = object_distance - self.security_distance 
+                
+                x_pos = goal_distance * np.cos(self.ego_yaw) 
+                y_pos = goal_distance * np.sin(self.ego_yaw)
+                
+                x_pos += self.ego_position[0]
+                y_pos += self.ego_position[1]
+                
+                print(x_pos,y_pos)
+                
             
-            x_pos += self.ego_position[0]
-            y_pos += self.ego_position[1]
             
-            print(x_pos,y_pos)
-            
-        
-        
-        print(self.ego_yaw*180.0/np.pi)
-        print("--------------")
+            print(self.ego_yaw*180.0/np.pi)
+            print("--------------")
         
 
 def main(args):
