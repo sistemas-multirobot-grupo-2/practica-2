@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <node pkg="gmapping" type="slam_gmapping" name="gmapping_thing" output="screen" >
-        <remap from="scan" to="/hokuyo/scan" />
+        <remap from="scan" to="/scan" />
         <remap from="tf" to="/tf" />
         <param name="odom_frame" value="/odom" />
         <param name="base_frame" value="/base_link" />

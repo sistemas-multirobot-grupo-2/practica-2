@@ -19,6 +19,6 @@ Para crear un nuevo mapa:
 
 Para localizarse en un mapa:
 1. roslaunch a_multirob create_one_robot.launch
-2. roslaunch localization localization.lauch
+2. roslaunch localization localization.launch
 3. roslaunch turtlebot_rviz_launchers view_navigation.launch
 

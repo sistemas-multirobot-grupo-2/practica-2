@@ -2,12 +2,10 @@
 <launch>
     <node name="map_server" pkg="map_server" type="map_server" args="$(find localization)/maps/my_map.yaml" />
     <node pkg="amcl" type="amcl" name="amcl"    output="screen">
-        <remap from="scan" to="/hokuyo/scan" />
+        <remap from="scan" to="/scan" />
         <remap from="tf" to="/tf" />
         <param name="initial_pose_x" value="0"/>
         <param name="initial_pose_y" value="0"/>
     </node>
-
-
 </launch>
 
