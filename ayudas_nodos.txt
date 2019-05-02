@@ -22,3 +22,15 @@ Para localizarse en un mapa:
 2. roslaunch localization localization.launch
 3. roslaunch turtlebot_rviz_launchers view_navigation.launch
 
+
+--------------------------------
+
+Para navegar por un mapa:
+
+1. roslaunch turtlebot_gazebo turtlebot_world.launch
+2. roslaunch turtlebot_gazebo amcl_demo.launch
+3. roslaunch turtlebot_rviz_launchers view_navigation.launch
+
+Usando:
+4. rosrun simple_navigation_goals simple_navigation_goals
+ se mueve 1 metro aprox.

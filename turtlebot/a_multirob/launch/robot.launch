@@ -11,7 +11,7 @@
 
 <!-- ROBOT 1 (leader) -->
 <include file="$(find a_multirob)/launch/one_robot.launch" >
-<arg name="init_pose" value="-x 1 -y 1 -z 0" />
+<arg name="init_pose" value="-x 0 -y 0 -z 0" />
 <arg name="robot_name"  value="leader_turtle" />
 </include>
 </launch>
