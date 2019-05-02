@@ -10,6 +10,10 @@
 using namespace std;
 
 
+/*
+ * Planning: This class uses the information about current posisition 
+ *  
+ */
 class Planning
 {
     private:
@@ -20,12 +24,19 @@ class Planning
     std_msgs::String next_pose_;
     
     public:
+    /*
+     * Class constructor
+     * param nh: Is the node handle created with the init node
+     */
     Planning(ros::NodeHandle& nh)
     {
         next_leader_position_pub_ = nh.advertise<std_msgs::String>("/next_leader_position", 1000);
         leader_position_sub_ = nh.subscribe("/leader_position", 1000, &Planning::nextLeaderPositionCallback,this);
     }
-    
+    /*
+     * Class Method and Topic Callback: /leader_position
+     * param msg: Is the data, published by other node, of our current position
+     */
     void nextLeaderPositionCallback(const std_msgs::String::ConstPtr& msg)
     {
         string message = msg->data.c_str();
@@ -52,7 +63,10 @@ class Planning
             next_pose_.data = ss.str();
         }
     };
-    
+    /*
+     * Class Method and ros loop: This loop listen the callbacks and publish the information about 
+     * the next leader position with some rate
+     */
     void loop()
     {
         ros::Rate rate(1);
@@ -67,6 +81,9 @@ class Planning
          
 };
 
+/*
+ * Main Function: Initialize the node and creates an object of the class.
+ */
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "planning");

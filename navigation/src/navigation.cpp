@@ -8,26 +8,29 @@
 
 using namespace std;
 
+typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
+
+
 /*
 	This contains the position coordinates for the navigation positions
 */
 struct positions
 {
-	//-HOME-//
-  double homeX = 1.35;
-  double homeY = -0.15;
-	//-position cargo-//
-  double pose1X = -2.87;
-  double pose1Y = 4.62;
-	//-position green-//
-	double pose2X = 11.09;
-	double pose2Y = 1.97;
-	//-position red-//
-	double pose3X = 15.47;
-  double pose3Y = -1.89;
+    //-HOME-//
+    double homeX = 1.35;
+    double homeY = -0.15;
+    //-position cargo-//
+    double pose1X = -2.87;
+    double pose1Y = 4.62;
+    //-position green-//
+    double pose2X = 11.09;
+    double pose2Y = 1.97;
+    //-position red-//
+    double pose3X = 15.47;
+    double pose3Y = -1.89;
 } pos;
 
-typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
+
 
 class leaderPosition
 {
