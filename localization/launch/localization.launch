@@ -4,6 +4,8 @@
     <node pkg="amcl" type="amcl" name="amcl"    output="screen">
         <remap from="scan" to="/hokuyo/scan" />
         <remap from="tf" to="/tf" />
+        <param name="initial_pose_x" value="0"/>
+        <param name="initial_pose_y" value="0"/>
     </node>
 
 
