@@ -3,72 +3,78 @@
 #include <cstdlib>
 #include <string>
 #include <sstream>
-#include "std_msgs/String.h"
 #include <move_base_msgs/MoveBaseAction.h>
+
+#include "std_msgs/String.h"
 
 using namespace std;
 
-class nextLeaderPosition
+
+class Planning
 {
-public:
-  // membres of the class
-  ros::Publisher nextLeaderPositionPub;
-  ros::Subscriber leaderPositionSub;
-  ros::NodeHandle nh;
-  move_base_msgs::MoveBaseGoal position;
+    private:
+    ros::Publisher next_leader_position_pub_;
+    ros::Subscriber leader_position_sub_;
+    
+    move_base_msgs::MoveBaseGoal position_;
+    std_msgs::String next_pose_;
+    
+    public:
+    Planning(ros::NodeHandle& nh)
+    {
+        next_leader_position_pub_ = nh.advertise<std_msgs::String>("/next_leader_position", 1000);
+        leader_position_sub_ = nh.subscribe("/leader_position", 1000, &Planning::nextLeaderPositionCallback,this);
+    }
+    
+    void nextLeaderPositionCallback(const std_msgs::String::ConstPtr& msg)
+    {
+        string message = msg->data.c_str();
+        std::stringstream ss;
 
-  // member functions of the class
-  // contructor
-  nextLeaderPosition()
-  {
-    // publisher
-    nextLeaderPositionPub = nh.advertise<std_msgs::String>("next_leader_position", 1000);
-    // subscriber
-    leaderPositionSub = nh.subscribe("leader_position", 1000, &nextLeaderPosition::nextLeaderPositionCallback,this);
-  }
-  // subscriber callback
-  void nextLeaderPositionCallback(const std_msgs::String::ConstPtr& msg)
-  {
-    string message = msg->data.c_str();
-    std::stringstream ss;
-    std_msgs::String msg2;
-    if(message == "home")
+        if(message == "home")
+        {
+            ss << "pose1";
+            next_pose_.data = ss.str();
+        }
+        else if(message == "pose1")
+        {
+            ss << "pose2";
+            next_pose_.data = ss.str();
+        }
+        else if(message == "pose2")
+        {
+            ss << "pose3";
+            next_pose_.data = ss.str();
+        }
+        else if(message == "pose3")
+        {
+            ss << "pose4";
+            next_pose_.data = ss.str();
+        }
+    };
+    
+    void loop()
     {
-      ss << "pose1";
-      msg2.data = ss.str();
-      nextLeaderPositionPub.publish(msg);
-  	}
-    else if(message == "pose1")
-    {
-      ss << "pose2";
-      msg2.data = ss.str();
-      nextLeaderPositionPub.publish(msg);
-    }
-    else if(message == "pose2")
-    {
-      ss << "pose3";
-      msg2.data = ss.str();
-      nextLeaderPositionPub.publish(msg);
-    }
-    else if(message == "pose3")
-    {
-      ss << "pose4";
-      msg2.data = ss.str();
-      nextLeaderPositionPub.publish(msg);
-    }
-  }
-
+        ros::Rate rate(1);
+        while (ros::ok())
+        {
+            next_leader_position_pub_.publish(next_pose_);
+            
+            ros::spinOnce();
+            rate.sleep();
+        }
+    };  
+         
 };
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "planning");
-  nextLeaderPosition nLeadPos;
-  ros::Rate loop_rate(1);
+	ros::init(argc, argv, "planning");
+	ros::NodeHandle n;
+	Planning* plan = new Planning(n);
+	plan->loop();
+	
+	delete(plan);
+	return 0;
+};
 
-  while (ros::ok())
-  {
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
-}
