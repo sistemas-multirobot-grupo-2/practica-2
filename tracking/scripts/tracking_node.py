@@ -13,13 +13,12 @@ from cv_bridge import CvBridge, CvBridgeError
 
 from perception.msg import perception_data
 
-
 class Tracking:
 
     def __init__(self):
         self.bridge = CvBridge()
         self.depth_subs = rospy.Subscriber("/robot2/camera/depth/image_raw",Image,self.depthCallback)
-        self.processed_image_subs = rospy.Subscriber("/perception_data",perception_data,self.perceptionDataCallback)#("/robot2/processed_data",Image,self.callback)
+        self.processed_image_subs = rospy.Subscriber("/perception_data",perception_data,self.perceptionDataCallback)
         self.gazebo_model_position_subs = rospy.Subscriber("/gazebo/model_states",ModelStates,self.gazeboPositionCallback)
 
         self.k = np.array([[554.254691191187,              0.0, 320.5], 
@@ -42,6 +41,11 @@ class Tracking:
         self.leader_position_gt = None
 
     def depthCallback(self,data):
+    """
+    Depth topic callback to transform depth to matrix
+    :param self: Instance reference
+    :param data: Get depth image data
+    """
         try:
             self.z = self.bridge.imgmsg_to_cv2(data, "32FC1")
         except CvBridgeError, e:
@@ -49,15 +53,29 @@ class Tracking:
             pass
 
     def perceptionDataCallback(self,data):
+    """
+    Perception topic callback
+    :param self: Instance reference
+    :param data: Processed data of the image to get centroid, area, etc.
+    """
         self.centroid = np.array([data.centroid_x,data.centroid_y])
         self.area = data.area
         
     
     def gazeboPositionCallback(self,data):
+    """
+    Position topic callback
+    :param self: Instance reference
+    :param data: Get the gazebo objects data to get the position
+    """
         self.ego_position = np.array([data.pose[1].position.x,data.pose[1].position.y,data.pose[1].position.z])
         self.leader_position_gt = np.array([data.pose[2].position.x,data.pose[2].position.y,data.pose[2].position.z])
     
     def computeXYZ(self):
+    """
+    Compute the X and Y coordinates for each pixel 
+    :param self: Instance reference
+    """
         if self.z is not None:
             sz = self.z.shape
             u = np.ones((sz[0],sz[1])) * range(1,sz[1]+1)
@@ -67,6 +85,10 @@ class Tracking:
             self.y = (v - self.k[1,2]) * self.z / self.k[0,0]
 
     def computeLeaderPosition(self):
+    """
+    Compute the leader position in the world coordinate system
+    :param self: Instance reference
+    """
         if (self.centroid is not None and self.z is not None):
             v,u = self.centroid
             
@@ -81,6 +103,10 @@ class Tracking:
             
 
     def computeNewGoal(self):
+    """
+    Compute the next position using a security distance to the leader position
+    :param self: Instance reference
+    """
         if self.leader_position is not None:
             self.ego_yaw = np.arctan2(self.leader_position[1]-self.ego_position[1],self.leader_position[0]-self.ego_position[0])
             
@@ -104,7 +130,10 @@ class Tracking:
             print("--------------")
         
 
-def main(args):
+def main():
+    """
+    Main function
+    """
     tracker = Tracking()
     rospy.init_node('tracking_node', anonymous=True)
     rate = rospy.Rate(1) # 2hz
