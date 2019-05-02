@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
 
 <launch>
-  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-    <rosparam file="$(find turtlebot_navigation)/laser/costmap_common_params.yaml" command="load" ns="global_costmap" />
-    <rosparam file="$(find turtlebot_navigation)/laser/costmap_common_params.yaml" command="load" ns="local_costmap" />
-    <rosparam file="$(find turtlebot_navigation)/param/local_costmap_params.yaml" command="load" />
-    <rosparam file="$(find turtlebot_navigation)/param/global_costmap_params.yaml" command="load" />
-  </node>
+
+  <arg name="custom_param_file" default="$(find turtlebot_navigation)/param/astra_costmap_params.yaml"/>
+  <include file="$(find navigation)/launch/move_base.launch.xml">
+    <arg name="custom_param_file" value="$(arg custom_param_file)"/>
+  </include>
 
 </launch>
