@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <launch>
   <arg name="gui"        default="true"/>
-  <arg name="world_file" default="$(env TURTLEBOT_GAZEBO_WORLD_FILE)"/>
+  <arg name="world_file" default="$(find turtlebot_gazebo)/worlds/green_cube.world"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="use_sim_time" value="true"/>

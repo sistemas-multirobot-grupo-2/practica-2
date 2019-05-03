@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 
 	//Image subscriber
 	image_transport::ImageTransport it(n);
-	image_transport::Subscriber sub = it.subscribe("robot2/camera/rgb/image_raw", 1, imageCallback);
+	image_transport::Subscriber sub = it.subscribe("/camera/rgb/image_raw", 1, imageCallback);
 
 	//Centroid (x and y) and area publisher (z)
 	ros::Publisher perception_pub = n.advertise<perception::perception_data>("perception_data", 10);
