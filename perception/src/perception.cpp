@@ -74,8 +74,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 					cv::Scalar(0, 0, 255)); //Bounding box
 			
 			//Show image (with centroid and bounding box)
-			cv::imshow("green_detection", img);
-			cv::waitKey(30);
+			//cv::imshow("green_detection", img);
+			//cv::waitKey(30);
 	
 			//Update global variables (to publish them in the main loop)
 			centroid_to_pub = centroid;

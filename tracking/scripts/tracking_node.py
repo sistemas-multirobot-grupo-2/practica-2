@@ -27,7 +27,7 @@ class Tracking:
         self.depth_subs = rospy.Subscriber("/camera/depth/image_raw",Image,self.depthCallback)
         self.processed_image_subs = rospy.Subscriber("/perception_data",perception_data,self.perceptionDataCallback)
         self.gazebo_model_position_subs = rospy.Subscriber("/gazebo/model_states",ModelStates,self.gazeboPositionCallback)
-        self.position_subs = rospy.Subscriber("/amcl_pose",PoseWithCovarianceStamped,self.positionCallback)
+#        self.position_subs = rospy.Subscriber("/amcl_pose",PoseWithCovarianceStamped,self.positionCallback)
         
         self.client = SimpleActionClient('move_base', MoveBaseAction)
         
@@ -81,7 +81,7 @@ class Tracking:
         :param data: Get the gazebo objects data to get the position
         """
         self.leader_position_gt = np.array([data.pose[2].position.x,data.pose[2].position.y,data.pose[2].position.z])
-#        self.ego_position = np.array([data.pose[1].position.x,data.pose[1].position.y,data.pose[1].position.z])
+        self.ego_position = np.array([data.pose[1].position.x,data.pose[1].position.y,data.pose[1].position.z])
     
     def positionCallback(self,data):
         """
@@ -118,9 +118,12 @@ class Tracking:
             #Image reference systen to ego reference system
             self.leader_position = np.array([self.z[int(u),int(v)],-1*self.x[int(u),int(v)],self.y[int(u),int(v)]])
             #Ego reference system to World reference system
-#            self.leader_position += self.ego_position
+            #self.leader_position += self.ego_position
 #            
-#            print(self.leader_position)
+            print(self.leader_position)
+            print(self.ego_position)
+            
+#            print(self.leader_position_gt)
 #            print("error")
 #            print(self.leader_position - self.leader_position_gt)
             
@@ -136,21 +139,31 @@ class Tracking:
             
             if object_distance > self.security_distance: #security distance
                 goal_distance = object_distance - self.security_distance
+                
                 x_pos = goal_distance * np.cos(self.ego_yaw) 
                 y_pos = goal_distance * np.sin(self.ego_yaw)
                 
+                print(x_pos,y_pos)
+                print("-----------")
+                
+                if abs(x_pos) <= 0.2:
+                    x_pos = 0.0
+                if abs(y_pos) <= 0.2:
+                    y_pos = 0.0     
+                
                 quaternion = transformations.quaternion_from_euler(0, 0, self.ego_yaw)
                 
-                self.goal.target_pose.header.frame_id = "odom"
+                self.goal.target_pose.header.frame_id = "base_link"
                 self.goal.target_pose.header.stamp = rospy.Time.now()
+                
                 self.goal.target_pose.pose.position.x = x_pos
                 self.goal.target_pose.pose.position.y = y_pos
-#                self.goal.target_pose.pose.position.z = 0.0
-#                self.goal.target_pose.pose.orientation.x = quaternion[0]
-#                self.goal.target_pose.pose.orientation.y = quaternion[1]
-#                self.goal.target_pose.pose.orientation.z = quaternion[2]
-#                self.goal.target_pose.pose.orientation.w = quaternion[3]
-                self.goal.target_pose.pose.orientation.w = 1.0
+                self.goal.target_pose.pose.position.z = 0.0
+                self.goal.target_pose.pose.orientation.x = quaternion[0]
+                self.goal.target_pose.pose.orientation.y = quaternion[1]
+                self.goal.target_pose.pose.orientation.z = quaternion[2]
+                self.goal.target_pose.pose.orientation.w = quaternion[3] #1.0
+
                 self.client.send_goal(self.goal)
                 rospy.loginfo('sent goal')
                 #rospy.loginfo(self.goal)
@@ -191,7 +204,7 @@ def main():
     Main function
     """
     rospy.init_node('tracking_node', anonymous=True)
-    rate = rospy.Rate(1) # 2hz
+    rate = rospy.Rate(3) # 2hz
     tracker = Tracking()
     
     try:
