@@ -29,9 +29,10 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 		cv::cvtColor(img, img_hsv, cv::COLOR_BGR2HSV);
 
 		//Threshold to get only the green parts
+		//Permissive: (20, 0, 0)-(80, 255, 255); Strict: (50, 100, 100)-(60, 255, 125)
 		cv::Mat thresholded_img;
-		cv::Scalar min_green = cv::Scalar(20, 0, 0); //Minimum values considered "green"
-		cv::Scalar max_green = cv::Scalar(80, 255, 255); //Maximum values considered "green"
+		cv::Scalar min_green = cv::Scalar(50, 100, 100); //Minimum values considered "green" 		
+		cv::Scalar max_green = cv::Scalar(60, 255, 125); //Maximum values considered "green" 
 		inRange(img_hsv, min_green, max_green, thresholded_img);
 		
 		//Search contours 
@@ -74,8 +75,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 					cv::Scalar(0, 0, 255)); //Bounding box
 			
 			//Show image (with centroid and bounding box)
-			//cv::imshow("green_detection", img);
-			//cv::waitKey(30);
+			cv::imshow("green_detection", img);
+			cv::waitKey(30);
 	
 			//Update global variables (to publish them in the main loop)
 			centroid_to_pub = centroid;
