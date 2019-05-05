@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+
+    <include file="$(find turtlebot_gazebo)/launch/turtlebot_world.launch" />
+    <include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch" />
+    <include file="$(find localization)/launch/localization.launch" />
+    <include file="$(find navigation)/launch/navigation.launch" />
+ 
+    <node pkg="planning" name="planning_node" type="planning_node.py" output="screen" />
+    <!---->
+</launch>
