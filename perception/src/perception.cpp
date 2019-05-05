@@ -16,6 +16,7 @@ cv::Point centroid_to_pub = cv::Point(0, 0);
 float area_to_pub = 0.0;
 cv::Rect bounding_box;
 int confidence = 0;
+cv::Mat image_to_publish;
 
 void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
@@ -74,9 +75,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 					cv::Point(bounding_box.x + bounding_box.width, bounding_box.y + bounding_box.height),
 					cv::Scalar(0, 0, 255)); //Bounding box
 			
-			//Show image (with centroid and bounding box)
-			cv::imshow("green_detection", img);
-			cv::waitKey(30);
+			//Store the processed image in the variable that will be published
+			image_to_publish = img;
 	
 			//Update global variables (to publish them in the main loop)
 			centroid_to_pub = centroid;
@@ -106,22 +106,22 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "perception");
 	ros::NodeHandle n;
 
-	//OpenCV setup
-	cv::namedWindow("green_detection");
-	cv::startWindowThread();
-
 	//Image subscriber
 	image_transport::ImageTransport it(n);
-	image_transport::Subscriber sub = it.subscribe("/camera/rgb/image_raw", 1, imageCallback);
+	image_transport::Subscriber sub = it.subscribe("camera/rgb/image_raw", 1, imageCallback);
+
+	//Processed image publisher
+	image_transport::Publisher image_pub = it.advertise("perception/processed_img", 1);
 
 	//Centroid (x and y) and area publisher (z)
-	ros::Publisher perception_pub = n.advertise<perception::perception_data>("perception_data", 10);
+	ros::Publisher perception_pub = n.advertise<perception::perception_data>("perception/information", 10);
+
 
 	ros::Rate loop_rate(10);
 
 	while (ros::ok())
 	{
-		//Create message
+		//Create informtaion message
 		perception::perception_data msg;
 		
 		msg.centroid_x = centroid_to_pub.x;
@@ -136,15 +136,19 @@ int main(int argc, char **argv)
 
 		msg.confidence = confidence;
 
+		//Create processed image message
+		sensor_msgs::ImagePtr image_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_to_publish).toImageMsg();
+
+
 		//Publish
-		perception_pub.publish(msg);
+		perception_pub.publish(msg); //Information
+		image_pub.publish(image_msg); //Processed image
+
 
 		//Spin and wait
 		ros::spinOnce();
 		loop_rate.sleep();
 	}
-
-	cv::destroyWindow("green_detection");
 
 	return 0;
 }
