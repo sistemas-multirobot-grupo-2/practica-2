@@ -19,8 +19,8 @@ class Planning:
         
         self.current_goal = 'home'
         self.goals = {'home': np.array([0.0,0.0]), 
-                      'pos1': np.array([-1.0,2.0]),
-                      'pos2': np.array([2.0,2.0]),}
+                      'pos1': np.array([1.0,0.0]),
+                      'pos2': np.array([1.0,1.0]),}
     
     def sendGoal(self,x_pos,y_pos,yaw):
         if abs(x_pos) <= 0.1:
@@ -60,10 +60,10 @@ class Planning:
         else:
             self.current_goal = 'home'
         
-        self.sendGoal(self.goals[self.current_goal][0],self.goals[self.current_goal][0],0)
+        self.sendGoal(self.goals[self.current_goal][0],self.goals[self.current_goal][1],0)
     
     def loop(self,rate):
-        self.sendGoal(self.goals['home'][0],self.goals['home'][0],0)
+        self.sendGoal(self.goals['home'][0],self.goals['home'][1],0)
         
         
         while not rospy.is_shutdown():

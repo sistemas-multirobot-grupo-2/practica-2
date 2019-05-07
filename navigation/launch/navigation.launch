@@ -2,7 +2,7 @@
 
 <launch>
 
-  <arg name="custom_param_file" default="$(find turtlebot_navigation)/param/astra_costmap_params.yaml"/>
+  <arg name="custom_param_file" default="$(find navigation)/launch/param/astra_costmap_params.yaml"/>
   <include file="$(find navigation)/launch/include/move_base.launch.xml">
     <arg name="custom_param_file" value="$(arg custom_param_file)"/>
   </include>
