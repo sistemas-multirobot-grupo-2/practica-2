@@ -25,12 +25,13 @@ class Tracking:
     def __init__(self):
         self.bridge = CvBridge()
         self.depth_subs = rospy.Subscriber("/camera/depth/image_raw",Image,self.depthCallback)
-        self.processed_image_subs = rospy.Subscriber("/perception_data",perception_data,self.perceptionDataCallback)
+        self.processed_image_subs = rospy.Subscriber("/perception/information",perception_data,self.perceptionDataCallback)
         #self.lidar_subs = rospy.Subscriber("/scan",LaserScan,self.lidarCallback)
         #self.lidar_pub = rospy.Publisher('/scan_cut', LaserScan, queue_size=10)
         
         self.client = SimpleActionClient('move_base', MoveBaseAction)
         self.goal = MoveBaseGoal()
+        self.goal.target_pose.header.frame_id = "base_link"
         
         self.k = np.array([[554.254691191187,              0.0, 320.5], 
                            [             0.0, 554.254691191187, 240.5],
@@ -39,7 +40,7 @@ class Tracking:
         self.y = None
         self.z = None
         self.bounding_box = None
-        self.area = None
+        self.area = 0.0
         self.centroid = None
         
         self.leader_position = None
@@ -126,18 +127,24 @@ class Tracking:
         Compute the leader position in the ego coordinate system and distance
         :param self: Instance reference
         """
-        if (self.centroid is not None and self.z is not None):
+        if (self.area > 20000 and self.z is not None):
             v,u = self.centroid
             self.leader_position = np.array([self.z[int(u),int(v)],-1*self.x[int(u),int(v)],self.y[int(u),int(v)]])
             self.leader_distance = np.sqrt((self.leader_position[0])**2+(self.leader_position[1])**2)
     
     def computeAngle(self):
-        if (self.centroid is not None and self.z is not None):
+        if (self.area > 20000 and self.z is not None):
             v,u = self.centroid
             #Tres puntos del bounding box con el centroide centrado
             A = np.array([self.z[int(u),int(v-10)],-1*self.x[int(u),int(v-10)],self.y[int(u),int(v-10)]])
             B = np.array([self.z[int(u-10),int(v+10)],-1*self.x[int(u-10),int(v+10)],self.y[int(u-10),int(v+10)]])
             C = np.array([self.z[int(u+10),int(v+10)],-1*self.x[int(u+10),int(v+10)],self.y[int(u+10),int(v+10)]])
+            
+#            points_v = np.random.randint(low=self.bounding_box[0]+1,high=self.bounding_box[0]+self.bounding_box[3], size=3)
+#            points_u = np.random.randint(low=self.bounding_box[1]+1,high=self.bounding_box[1]+self.bounding_box[2], size=3)
+#            A = np.array([self.z[points_u[0],points_v[0]],-1*self.x[points_u[0],points_v[0]],self.y[points_u[0],points_v[0]]])
+#            B = np.array([self.z[points_u[1],points_v[1]],-1*self.x[points_u[1],points_v[1]],self.y[points_u[1],points_v[1]]])
+#            C = np.array([self.z[points_u[2],points_v[2]],-1*self.x[points_u[2],points_v[2]],self.y[points_u[2],points_v[2]]])
             
             AB = B - A
             AC = C - A
@@ -148,6 +155,9 @@ class Tracking:
             r = -1 * VN[0:2]
             
             self.ego_yaw = np.arctan2(r[1],r[0])
+            
+            if abs(self.ego_yaw) > 1.22: #70 grados
+                self.ego_yaw = 0
             
             print("A: "+ str(A))
             print("B: "+ str(B))
@@ -164,7 +174,7 @@ class Tracking:
         Compute the next position using a security distance to the leader position
         :param self: Instance reference
         """
-        if (self.centroid is not None and self.z is not None):
+        if (self.area > 20000 and self.z is not None):
             if self.leader_distance > self.security_distance: #security distance
                 x_pos = self.leader_position[0] - (self.security_distance * np.cos(self.ego_yaw))
                 y_pos = self.leader_position[1] - (self.security_distance * np.sin(self.ego_yaw))
@@ -173,26 +183,27 @@ class Tracking:
                 print("Goal Y:" + str(y_pos))
                 print("-------") 
                 
-                if abs(x_pos) <= 0.1:
-                    x_pos = 0.0
-                if abs(y_pos) <= 0.1:
-                    y_pos = 0.0
-                
-                quaternion = transformations.quaternion_from_euler(0, 0, self.ego_yaw)
-                
-                self.goal.target_pose.header.frame_id = "base_link"
-                self.goal.target_pose.header.stamp = rospy.Time.now()
-                
-                self.goal.target_pose.pose.position.x = x_pos
-                self.goal.target_pose.pose.position.y = y_pos
-                self.goal.target_pose.pose.position.z = 0.0
-                self.goal.target_pose.pose.orientation.x = quaternion[0]
-                self.goal.target_pose.pose.orientation.y = quaternion[1]
-                self.goal.target_pose.pose.orientation.z = quaternion[2]
-                self.goal.target_pose.pose.orientation.w = quaternion[3] #1.0
+                self.sendGoal(x_pos,y_pos)
+    
+    def sendGoal(self,x_pos,y_pos):
+        if abs(x_pos) <= 0.1:
+            x_pos = 0.0
+        if abs(y_pos) <= 0.1:
+            y_pos = 0.0
+        
+        quaternion = transformations.quaternion_from_euler(0, 0, self.ego_yaw)
 
-                self.client.send_goal(self.goal)
-                self.client.wait_for_result()
+        self.goal.target_pose.header.stamp = rospy.Time.now()
+        self.goal.target_pose.pose.position.x = x_pos
+        self.goal.target_pose.pose.position.y = y_pos
+        self.goal.target_pose.pose.position.z = 0.0
+        self.goal.target_pose.pose.orientation.x = quaternion[0]
+        self.goal.target_pose.pose.orientation.y = quaternion[1]
+        self.goal.target_pose.pose.orientation.z = quaternion[2]
+        self.goal.target_pose.pose.orientation.w = quaternion[3] #1.0
+        
+        self.client.send_goal(self.goal)
+        self.client.wait_for_result()
          
     def loop(self,rate):
         while not rospy.is_shutdown():

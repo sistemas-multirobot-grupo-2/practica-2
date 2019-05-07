@@ -7,6 +7,5 @@
     <include file="$(find navigation)/launch/navigation.launch" />
  
     <node pkg="perception" name="perception" type="perception" output="screen" />
-    <node pkg="tracking" name="tracking" type="tracking_node.py" output="screen" />
     <!---->
 </launch>
