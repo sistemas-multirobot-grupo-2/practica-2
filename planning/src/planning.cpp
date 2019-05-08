@@ -4,25 +4,24 @@
 #include <string>
 #include <sstream>
 #include <move_base_msgs/MoveBaseAction.h>
-
 #include "std_msgs/String.h"
 
 using namespace std;
 
 
 /*
- * Planning: This class uses the information about current posisition 
- *  
+ * Planning: This class uses the information about current posisition
+ *
  */
 class Planning
 {
     private:
     ros::Publisher next_leader_position_pub_;
     ros::Subscriber leader_position_sub_;
-    
+
     move_base_msgs::MoveBaseGoal position_;
     std_msgs::String next_pose_;
-    
+
     public:
     /*
      * Class constructor
@@ -30,8 +29,9 @@ class Planning
      */
     Planning(ros::NodeHandle& nh)
     {
-        next_leader_position_pub_ = nh.advertise<std_msgs::String>("/next_leader_position", 1000);
-        leader_position_sub_ = nh.subscribe("/leader_position", 1000, &Planning::nextLeaderPositionCallback,this);
+        next_leader_position_pub_ = nh.advertise<std_msgs::String>("next_leader_position", 1000);
+        leader_position_sub_ = nh.subscribe("leader_position", 1000, &Planning::nextLeaderPositionCallback,this);
+        cout << "subscribed" << endl;
     }
     /*
      * Class Method and Topic Callback: /leader_position
@@ -39,32 +39,47 @@ class Planning
      */
     void nextLeaderPositionCallback(const std_msgs::String::ConstPtr& msg)
     {
-        string message = msg->data.c_str();
+        cout << "entra" << endl;
+        string message = msg->data;
+        cout << message << endl;
         std::stringstream ss;
+        std::string s;
 
         if(message == "home")
         {
             ss << "pose1";
-            next_pose_.data = ss.str();
+            s = ss.str();
+            next_pose_.data = s;
         }
         else if(message == "pose1")
         {
             ss << "pose2";
-            next_pose_.data = ss.str();
+            s = ss.str();
+            cout << s << endl;
+            next_pose_.data = s;
         }
         else if(message == "pose2")
         {
             ss << "pose3";
-            next_pose_.data = ss.str();
+            s = ss.str();
+            cout << s << endl;
+            next_pose_.data = s;
         }
         else if(message == "pose3")
         {
-            ss << "pose4";
-            next_pose_.data = ss.str();
+            ss << "home";
+            s = ss.str();
+            cout << s << endl;
+            next_pose_.data = s;
         }
-    };
+        do {
+          next_leader_position_pub_.publish(next_pose_);
+        } while(!next_leader_position_pub_.getNumSubscribers() > 0);
+
+
+    }
     /*
-     * Class Method and ros loop: This loop listen the callbacks and publish the information about 
+     * Class Method and ros loop: This loop listen the callbacks and publish the information about
      * the next leader position with some rate
      */
     void loop()
@@ -72,13 +87,12 @@ class Planning
         ros::Rate rate(1);
         while (ros::ok())
         {
-            next_leader_position_pub_.publish(next_pose_);
-            
+            //cout << "working" << endl;
             ros::spinOnce();
             rate.sleep();
         }
-    };  
-         
+    }
+
 };
 
 /*
@@ -90,8 +104,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	Planning* plan = new Planning(n);
 	plan->loop();
-	
+
 	delete(plan);
 	return 0;
 };
-
