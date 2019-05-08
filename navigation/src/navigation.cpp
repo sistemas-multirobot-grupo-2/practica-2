@@ -8,9 +8,6 @@
 
 using namespace std;
 
-typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
-
-
 /*
 	This contains the position coordinates for the navigation positions
 */
@@ -30,23 +27,20 @@ struct positions
     double pose3Y = -1.89;
 } pos;
 
+typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
-
-class leaderPosition
+class leader_position
 {
-public:
+private:
   // membres of the class
-  ros::Publisher leaderPositionPub;
   ros::Subscriber nextLeaderPositionSub;
-  ros::NodeHandle nh;
   move_base_msgs::MoveBaseGoal position;
-
-
+public:
+  ros::Publisher leaderPositionPub;
   // member functions of the class
   // contructor
-  leaderPosition()
+  leader_position(ros::NodeHandle& nh)
   {
-
     //configuration of main position values
     position.target_pose.header.frame_id = "map";
     position.target_pose.header.stamp = ros::Time::now();
@@ -54,22 +48,24 @@ public:
     // publisher
     leaderPositionPub = nh.advertise<std_msgs::String>("leader_position", 1000);
     // subscriber
-    nextLeaderPositionSub = nh.subscribe("next_leader_position", 1000, &leaderPosition::move2posCallBack, this);
+    nextLeaderPositionSub = nh.subscribe("next_leader_position", 1000, &leader_position::move2posCallBack, this);
   }
 
   // subscriber callback
   void move2posCallBack(const std_msgs::String::ConstPtr& msg)
   {
-    //wait for the action server to come up
-    string message= msg->data.c_str();
-    std::stringstream ss;
-    std_msgs::String msg2;
-
+    //cout << msg->data << endl;
+    cout << "entra" << endl;
     MoveBaseClient ac("move_base", true);
     while(!ac.waitForServer(ros::Duration(5.0))){
       ROS_INFO("Waiting for the move_base action server to come up");
     }
+    //wait for the action server to come up
+    string message = msg->data;
 
+    cout << message << endl;
+    std::stringstream ss;
+    std_msgs::String msg2;
 
     if(message == "home")
     { //Changes position coordinates to match
@@ -85,8 +81,10 @@ public:
       {
         cout << "Target position achieved." << endl << endl;
         ss << "home";
-        msg2.data = ss.str();
-        leaderPositionPub.publish(msg2);
+        msg2.data = "home";
+        do {
+          leaderPositionPub.publish(msg2);
+        } while(!leaderPositionPub.getNumSubscribers() > 0);
     	}
       else
       cout << "Position could not be reached, attempting to rescue TurtleBot... sending it back home..." << endl;
@@ -104,8 +102,10 @@ public:
       {
         cout << "Target position achieved." << endl << endl;
         ss << "pose1";
-        msg2.data = ss.str();
-        leaderPositionPub.publish(msg2);
+        msg2.data = "pose1";
+        do {
+          leaderPositionPub.publish(msg2);
+        } while(!leaderPositionPub.getNumSubscribers() > 0);
       }
       else
         cout << "Position could not be reached, attempting to rescue TurtleBot... sending it back home..." << endl;
@@ -123,8 +123,10 @@ public:
       {
         cout << "Target position achieved." << endl << endl;
         ss << "pose2";
-        msg2.data = ss.str();
-        leaderPositionPub.publish(msg2);
+        msg2.data = "pose2";
+        do {
+          leaderPositionPub.publish(msg2);
+        } while(!leaderPositionPub.getNumSubscribers() > 0);
       }
       else
         cout << "Position could not be reached, attempting to rescue TurtleBot... sending it back home..." << endl;
@@ -142,8 +144,10 @@ public:
       {
         cout << "Target position achieved." << endl << endl;
         ss << "pose3";
-        msg2.data = ss.str();
-        leaderPositionPub.publish(msg2);
+        msg2.data = "pose3";
+        do {
+          leaderPositionPub.publish(msg2);
+        } while(!leaderPositionPub.getNumSubscribers() > 0);
       }
       else
         cout << "Position could not be reached, attempting to rescue TurtleBot... sending it back home..." << endl;
@@ -155,15 +159,23 @@ public:
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "navigation");
-  leaderPosition leadPos;
+  ros::NodeHandle nh;
+  leader_position leadPos(nh);
   ros::Rate loop_rate(1);
 
   std_msgs::String msg; // create the message to send
   std::stringstream ss;
   ss << "home";
   msg.data = ss.str();
-  leadPos.leaderPositionPub.publish(msg);
+  ROS_INFO("%s", msg.data.c_str());
+  do {
+    leadPos.leaderPositionPub.publish(msg);
+  } while(!leadPos.leaderPositionPub.getNumSubscribers() > 0);
 
+
+  cout << "cff" << endl;
+  ros::spinOnce();
+  cout << "sended" << endl;
   while (ros::ok())
   {
     ros::spinOnce();
