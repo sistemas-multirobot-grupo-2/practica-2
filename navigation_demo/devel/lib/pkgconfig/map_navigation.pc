@@ -1,0 +1,8 @@
+prefix=/home/jonathan15/Desktop/TurtleStorage_2/catkin_ws_turtle_storage_2/devel
+
+Name: map_navigation
+Description: Description of map_navigation
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/jonathan15/Desktop/TurtleStorage_2/catkin_ws_turtle_storage_2/devel/lib 
+Requires: 

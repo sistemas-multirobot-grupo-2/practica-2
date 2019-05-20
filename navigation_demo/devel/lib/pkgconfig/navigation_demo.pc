@@ -1,0 +1,8 @@
+prefix=/home/jonathan15/Desktop/navigation_demo/devel
+
+Name: navigation_demo
+Description: Description of navigation_demo
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/jonathan15/Desktop/navigation_demo/devel/lib 
+Requires: 

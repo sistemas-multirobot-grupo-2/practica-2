@@ -1,0 +1,8 @@
+prefix=/home/jonathan15/Desktop/TurtleStorage_2/catkin_ws_turtle_storage_2/devel
+
+Name: turtle_storage
+Description: Description of turtle_storage
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/jonathan15/Desktop/TurtleStorage_2/catkin_ws_turtle_storage_2/devel/lib 
+Requires: 
