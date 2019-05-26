@@ -5,6 +5,7 @@ import roslib
 import sys
 import cv2
 import numpy as np
+import time
 
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from actionlib import SimpleActionClient
@@ -18,9 +19,9 @@ class Planning:
         self.goal = MoveBaseGoal()
         
         self.current_goal = 'home'
-        self.goals = {'home': np.array([0.0,0.0]), 
-                      'pos1': np.array([1.0,0.0]),
-                      'pos2': np.array([1.0,1.0]),}
+        self.goals = {'home': np.array([-1.52,-0.63]), 
+                      'pos1': np.array([0.16,-0.39]),
+                      'pos2': np.array([-0.34808,-0.74213])}
     
     def sendGoal(self,x_pos,y_pos,yaw):
         if abs(x_pos) <= 0.1:
@@ -46,6 +47,7 @@ class Planning:
         self.client.wait_for_result()
         print('Reached ' + self.current_goal)
         print(self.client.get_result())
+	time.sleep(3)
             
     def computeNewGoal(self):
         if self.current_goal == 'pos2':

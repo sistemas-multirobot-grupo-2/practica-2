@@ -24,7 +24,7 @@ class Tracking:
 
     def __init__(self):
         self.bridge = CvBridge()
-        self.depth_subs = rospy.Subscriber("/camera/depth/image_raw",Image,self.depthCallback)
+        self.depth_subs = rospy.Subscriber("/camera/depth/image",Image,self.depthCallback)
         self.processed_image_subs = rospy.Subscriber("/perception/information",perception_data,self.perceptionDataCallback)
         #self.lidar_subs = rospy.Subscriber("/scan",LaserScan,self.lidarCallback)
         #self.lidar_pub = rospy.Publisher('/scan_cut', LaserScan, queue_size=10)
@@ -44,7 +44,7 @@ class Tracking:
         self.centroid = None
         
         self.leader_position = None
-        self.security_distance = 1.5
+        self.security_distance = 1
         self.goal_position = None
         
         self.yaw = None
@@ -53,6 +53,7 @@ class Tracking:
         
         self.lidar = None
         
+        self.min_area = 5000
 
 
     def depthCallback(self,data):
@@ -62,7 +63,9 @@ class Tracking:
         :param data: Get depth image data
         """
         try:
-            self.z = self.bridge.imgmsg_to_cv2(data, "32FC1")
+            self.z = self.bridge.imgmsg_to_cv2(data)
+            #print(self.z.shape)
+
         except CvBridgeError, e:
             print(e)
             pass
@@ -127,13 +130,13 @@ class Tracking:
         Compute the leader position in the ego coordinate system and distance
         :param self: Instance reference
         """
-        if (self.area > 20000 and self.z is not None):
+        if (self.area > self.min_area and self.z is not None):
             v,u = self.centroid
             self.leader_position = np.array([self.z[int(u),int(v)],-1*self.x[int(u),int(v)],self.y[int(u),int(v)]])
             self.leader_distance = np.sqrt((self.leader_position[0])**2+(self.leader_position[1])**2)
     
     def computeAngle(self):
-        if (self.area > 20000 and self.z is not None):
+        if (self.area > self.min_area and self.z is not None):
             v,u = self.centroid
             #Tres puntos del bounding box con el centroide centrado
             A = np.array([self.z[int(u),int(v-10)],-1*self.x[int(u),int(v-10)],self.y[int(u),int(v-10)]])
@@ -174,7 +177,8 @@ class Tracking:
         Compute the next position using a security distance to the leader position
         :param self: Instance reference
         """
-        if (self.area > 20000 and self.z is not None):
+        if (self.area > self.min_area and self.z is not None):
+            print(self.leader_distance)
             if self.leader_distance > self.security_distance: #security distance
                 x_pos = self.leader_position[0] - (self.security_distance * np.cos(self.ego_yaw))
                 y_pos = self.leader_position[1] - (self.security_distance * np.sin(self.ego_yaw))

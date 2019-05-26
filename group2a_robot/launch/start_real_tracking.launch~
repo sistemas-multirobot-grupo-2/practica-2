@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
+    <include file="$(find turtlebot_bringup)/launch/includes/2dsensor/hokuyo_ust10lx.launch" />
+    <include file="$(find astra_launch)/launch/astra.launch" />
+    <include file="$(find localization)/launch/localization.launch" />
+    <include file="$(find navigation)/launch/navigation.launch" />
+ 
+    <node pkg="perception" name="perception" type="perception" output="screen" />
+
+    <node pkg="image_view" name="image_view" type="image_view" output="screen" >
+    <param name="image" value="/perception/processed_img" />
+    </node>
+
+    <node pkg="tracking" name="tracking_node" type="tracking_node.py" output="screen" />
+
+</launch>
+

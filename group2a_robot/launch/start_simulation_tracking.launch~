@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+
+    <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
+    <include file="$(find turtlebot_bringup)/launch/hokuyo_ust10lx.launch" />
+    <include file="$(find astra_launch)/launch/astra.launch" />
+    <include file="$(find localization)/launch/localization.launch" />
+    <include file="$(find navigation)/launch/navigation.launch" />
+ 
+    <node pkg="perception" name="perception" type="perception" output="screen" />
+
+    <node pkg="tracking" name="perception" type="perception" output="screen" />
+
+</launch>

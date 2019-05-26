@@ -1,0 +1,243 @@
+#!/usr/bin/env python
+
+import rospy
+import roslib
+import sys
+import cv2
+import numpy as np
+
+from std_msgs.msg import String
+from gazebo_msgs.msg import ModelStates #Just for simulation with Gazebo
+from geometry_msgs.msg import Vector3, PoseWithCovarianceStamped
+from sensor_msgs.msg import Image, LaserScan
+from cv_bridge import CvBridge, CvBridgeError
+
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from actionlib import SimpleActionClient
+
+from tf import transformations
+
+from perception.msg import perception_data
+
+
+class Tracking:
+
+    def __init__(self):
+        self.bridge = CvBridge()
+        self.depth_subs = rospy.Subscriber("/camera/depth/image",Image,self.depthCallback)
+        self.processed_image_subs = rospy.Subscriber("/perception/information",perception_data,self.perceptionDataCallback)
+        #self.lidar_subs = rospy.Subscriber("/scan",LaserScan,self.lidarCallback)
+        #self.lidar_pub = rospy.Publisher('/scan_cut', LaserScan, queue_size=10)
+        
+        self.client = SimpleActionClient('move_base', MoveBaseAction)
+        self.goal = MoveBaseGoal()
+        self.goal.target_pose.header.frame_id = "base_link"
+        
+        self.k = np.array([[554.254691191187,              0.0, 320.5], 
+                           [             0.0, 554.254691191187, 240.5],
+                           [             0.0,              0.0,   1.0]])
+        self.x = None
+        self.y = None
+        self.z = None
+        self.bounding_box = None
+        self.area = 0.0
+        self.centroid = None
+        
+        self.leader_position = None
+        self.security_distance = 1
+        self.goal_position = None
+        
+        self.yaw = None
+        
+        self.leader_distance = None
+        
+        self.lidar = None
+        
+        self.min_area = 5000
+
+
+    def depthCallback(self,data):
+        """
+        Depth topic callback to transform depth to matrix
+        :param self: Instance reference
+        :param data: Get depth image data
+        """
+        try:
+            self.z = self.bridge.imgmsg_to_cv2(data)
+            #print(self.z.shape)
+
+        except CvBridgeError, e:
+            print(e)
+            pass
+
+    def perceptionDataCallback(self,data):
+        """
+        Perception topic callback
+        :param self: Instance reference
+        :param data: Processed data of the image to get centroid, area, etc.
+        """
+        self.centroid = np.array([data.centroid_x,data.centroid_y])
+        self.area = data.area
+        self.bounding_box = np.array([data.bb_x,data.bb_y,data.bb_width,data.bb_height])
+        
+    
+    def lidarCallback(self,data):
+        """
+        Laser topic callback
+        :param self: Instance reference
+        :param data: Lidar sensor data
+        """
+#        len(data.ranges) = 1081
+#        data.angle_max = 2.35619997978
+#        data.angle_min = -2.35619997978
+#        data.angle_increment = 0.00436333334073
+#        data.range_max = 10.0
+#        data.range_min = 0.0599999986589
+        
+        search_angle = 30.0
+        lidar_range = (search_angle * np.pi) / (180.0 * data.angle_increment)
+        self.lidar = data.ranges[int(540-lidar_range):int(540+lidar_range)] 
+        
+        if self.leader_distance is not None:
+            self.lidar = list(self.lidar)
+            for i in range(len(self.lidar)):
+                if self.lidar[i] > self.leader_distance + 0.5 or self.lidar[i] < self.leader_distance - 0.5:
+                    self.lidar[i] = 0
+        
+#        scan = data
+#        scan.angle_min = -search_angle*np.pi/180.0
+#        scan.angle_max = search_angle*np.pi/180.0
+#        scan.ranges = lidar
+
+#        self.lidar_pub.publish(scan)
+    
+
+    def computeXYZ(self):
+        """
+        Compute the X and Y coordinates for each pixel 
+        :param self: Instance reference
+        """
+        if self.z is not None:
+            sz = self.z.shape
+            u = np.ones((sz[0],sz[1])) * range(1,sz[1]+1)
+            v = (np.ones((sz[1],sz[0])) * range(1,sz[0]+1)).T
+            
+            self.x = (u - self.k[0,2]) * self.z / self.k[0,0]
+            self.y = (v - self.k[1,2]) * self.z / self.k[0,0]      
+
+    def computeLeaderPosition(self):
+        """
+        Compute the leader position in the ego coordinate system and distance
+        :param self: Instance reference
+        """
+        if (self.area > self.min_area and self.z is not None):
+            v,u = self.centroid
+            self.leader_position = np.array([self.z[int(u),int(v)],-1*self.x[int(u),int(v)],self.y[int(u),int(v)]])
+            self.leader_distance = np.sqrt((self.leader_position[0])**2+(self.leader_position[1])**2)
+    
+    def computeAngle(self):
+        if (self.area > self.min_area and self.z is not None):
+            v,u = self.centroid
+            #Tres puntos del bounding box con el centroide centrado
+            A = np.array([self.z[int(u),int(v-10)],-1*self.x[int(u),int(v-10)],self.y[int(u),int(v-10)]])
+            B = np.array([self.z[int(u-10),int(v+10)],-1*self.x[int(u-10),int(v+10)],self.y[int(u-10),int(v+10)]])
+            C = np.array([self.z[int(u+10),int(v+10)],-1*self.x[int(u+10),int(v+10)],self.y[int(u+10),int(v+10)]])
+            
+#            points_v = np.random.randint(low=self.bounding_box[0]+1,high=self.bounding_box[0]+self.bounding_box[3], size=3)
+#            points_u = np.random.randint(low=self.bounding_box[1]+1,high=self.bounding_box[1]+self.bounding_box[2], size=3)
+#            A = np.array([self.z[points_u[0],points_v[0]],-1*self.x[points_u[0],points_v[0]],self.y[points_u[0],points_v[0]]])
+#            B = np.array([self.z[points_u[1],points_v[1]],-1*self.x[points_u[1],points_v[1]],self.y[points_u[1],points_v[1]]])
+#            C = np.array([self.z[points_u[2],points_v[2]],-1*self.x[points_u[2],points_v[2]],self.y[points_u[2],points_v[2]]])
+            
+            AB = B - A
+            AC = C - A
+            
+            VN = np.cross(AB,AC) #Vector normal al plano del lider
+            
+            #Proyeccion de la recta sobre el plano(xy) -> z=0. Cambiamos la direccion ya que nos interesa la inversa
+            r = -1 * VN[0:2]
+            
+            self.ego_yaw = np.arctan2(r[1],r[0])
+            
+            if abs(self.ego_yaw) > 1.22: #70 grados
+                self.ego_yaw = 0
+            
+            print("A: "+ str(A))
+            print("B: "+ str(B))
+            print("C: "+ str(C))
+            print("AB: "+ str(AB))
+            print("AC: "+ str(AC))
+            print("VN: "+ str(VN))
+            print("r: "+ str(r))
+            print("yaw: "+ str(self.ego_yaw))
+        
+            
+    def computeNewGoal(self):
+        """
+        Compute the next position using a security distance to the leader position
+        :param self: Instance reference
+        """
+        if (self.area > self.min_area and self.z is not None):
+            print(self.leader_distance)
+            if self.leader_distance > self.security_distance: #security distance
+                x_pos = self.leader_position[0] - (self.security_distance * np.cos(self.ego_yaw))
+                y_pos = self.leader_position[1] - (self.security_distance * np.sin(self.ego_yaw))
+                
+                print("Goal X:" + str(x_pos))
+                print("Goal Y:" + str(y_pos))
+                print("-------") 
+                
+                #self.sendGoal(x_pos,y_pos)
+    
+    def sendGoal(self,x_pos,y_pos):
+        if abs(x_pos) <= 0.1:
+            x_pos = 0.0
+        if abs(y_pos) <= 0.1:
+            y_pos = 0.0
+        
+        quaternion = transformations.quaternion_from_euler(0, 0, self.ego_yaw)
+
+        self.goal.target_pose.header.stamp = rospy.Time.now()
+        self.goal.target_pose.pose.position.x = x_pos
+        self.goal.target_pose.pose.position.y = y_pos
+        self.goal.target_pose.pose.position.z = 0.0
+        self.goal.target_pose.pose.orientation.x = quaternion[0]
+        self.goal.target_pose.pose.orientation.y = quaternion[1]
+        self.goal.target_pose.pose.orientation.z = quaternion[2]
+        self.goal.target_pose.pose.orientation.w = quaternion[3] #1.0
+        
+        self.client.send_goal(self.goal)
+        self.client.wait_for_result()
+         
+    def loop(self,rate):
+        while not rospy.is_shutdown():
+            self.computeXYZ()
+            self.computeLeaderPosition()
+            self.computeAngle()
+            self.computeNewGoal()
+            rate.sleep()
+    
+def main():
+    """
+    Main function
+    """
+    rospy.init_node('tracking_node', anonymous=True)
+    rate = rospy.Rate(3) # 2hz
+    tracker = Tracking()
+    
+    try:
+        tracker.client.wait_for_server()
+        tracker.loop(rate)
+        
+    except KeyboardInterrupt:
+        print("Shutting down")
+        pass  
+    except rospy.ROSInterruptException:
+        print("Shutting down")
+        pass  
+
+if __name__ == '__main__':
+    main()
+    
+    
+    
